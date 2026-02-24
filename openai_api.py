@@ -1,12 +1,24 @@
 import json
 import time
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional, Literal
 from llm_service import LLMService
+from auth import verify_api_key_dependency
 
 router = APIRouter(prefix="/v1")
+
+# 模型信息数据结构
+class ModelInfo(BaseModel):
+    id: str
+    object: str = "model"
+    created: int
+    owned_by: str = "local"
+
+class ModelsResponse(BaseModel):
+    object: str = "list"
+    data: List[ModelInfo]
 
 # OpenAI ChatCompletion 请求格式
 class ChatMessage(BaseModel):
@@ -32,7 +44,7 @@ def build_prompt_from_messages(messages: List[ChatMessage]) -> str:
     raise HTTPException(status_code=400, detail="No user message found")
 
 @router.post("/chat/completions")
-async def chat_completions(request: ChatCompletionRequest, req: Request):
+async def chat_completions(request: ChatCompletionRequest, req: Request, api_key: str = Depends(verify_api_key_dependency)):
     # 获取服务实例（在应用启动时设置）
     llm: LLMService = req.app.state.llm
 
@@ -96,3 +108,15 @@ async def chat_completions(request: ChatCompletionRequest, req: Request):
             yield "data: [DONE]\n\n"
 
         return StreamingResponse(generate(), media_type="text/event-stream")
+
+@router.get("/models")
+async def list_models(api_key: str = Depends(verify_api_key_dependency)):
+    models = [
+        ModelInfo(
+            id="Intel(R) OpenVINO(TM) GenAI Localhost Model",
+            created=int(time.time())
+        )
+    ]
+    
+    response = ModelsResponse(data=models)
+    return JSONResponse(content=response.dict())

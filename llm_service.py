@@ -17,12 +17,14 @@ class LLMService:
     def _load_model(self):
         """加载模型（同步，阻塞）"""
         try:
+            console.print(f"[dim]🔄 Loading model {self.model_path} to device {self.device}...[/dim]")
+            console.print("[dim]   Please wait a moment. The model requires some time to load. Once completed, the API/Console Client will be available immediately.[/dim]")
             self.pipe = ov_genai.LLMPipeline(self.model_path, device=self.device)
-            console.print(f"[dim]✅ 模型加载成功，运行设备：{self.device}[/dim]")
+            console.print(f"[dim]✅ Model loaded successfully. Running device: {self.device}[/dim]")
         except RuntimeError as e:
-            console.print(f"[red]⚠️ 设备 {self.device} 加载失败，自动切换到 AUTO 模式[/red]")
+            console.print(f"[red]⚠️ Device {self.device} failed to load. Switching to automatic mode.[/red]")
             self.pipe = ov_genai.LLMPipeline(self.model_path, device="AUTO")
-            console.print("[dim]✅ 模型已切换到 AUTO 设备运行[/dim]")
+            console.print("[dim]✅ The model has switched to AUTO device operation.[/dim]")
 
     def _build_prompt(self, user_input: str) -> str:
         """构建提示词（与原始脚本一致）"""

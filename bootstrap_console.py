@@ -7,19 +7,22 @@ from rich.live import Live
 from rich.text import Text
 from rich.box import ROUNDED
 from llm_service import LLMService
+from asciiart import print_ascii_art
 
 THINK_START = "<think>"
 THINK_END = "</think>"
 
 def main():
-    parser = argparse.ArgumentParser(description="OpenVINO GenAI 本地模型会话（带提示词工程+实时计时）")
-    parser.add_argument("model_path", help="模型目录路径（本地OpenVINO格式模型）")
-    parser.add_argument("prompt", help="用户输入的问题/提示词")
-    parser.add_argument("-d", "--device", default="AUTO", help="运行设备（AUTO/CPU/GPU/NPU/Intel® Arc™）")
-    parser.add_argument("-m", "--max-tokens", type=int, default=32768, help="最大生成Token数")
-    parser.add_argument("-t", "--temperature", type=float, default=0.7, help="生成温度（0-1，越高越随机）")
-    parser.add_argument("-p", "--top-p", type=float, default=0.9, help="Top-P采样（0-1）")
-    parser.add_argument("-s", "--stream", action="store_true", help="开启实时流式输出（推荐）")
+    # 打印ASCII艺术
+    print_ascii_art()
+    parser = argparse.ArgumentParser(description="OpenVINO GenAI Console Client")
+    parser.add_argument("model_path", help="Path to the local OpenVINO model directory")
+    parser.add_argument("prompt", help="User input question or prompt")
+    parser.add_argument("-d", "--device", default="AUTO", help="Device to run on (AUTO/CPU/GPU/NPU/Intel® Arc™)")
+    parser.add_argument("-m", "--max-tokens", type=int, default=32768, help="Maximum number of tokens to generate")
+    parser.add_argument("-t", "--temperature", type=float, default=0.7, help="Generation temperature (0-1, higher is more random)")
+    parser.add_argument("-p", "--top-p", type=float, default=0.9, help="Top-P sampling (0-1, higher is more random)")
+    parser.add_argument("-s", "--stream", action="store_true", help="Enable streaming output (recommended)")
 
     args = parser.parse_args()
     console = Console()
@@ -52,7 +55,7 @@ def main():
             if not is_thinking_done:
                 think_elapsed = time.time() - think_start_time
 
-            thought_title = f"🧠 AI 思考过程 • Took {think_elapsed:.1f}s" if thought_content else "🧠 AI 思考过程"
+            thought_title = f"🧠 AI Thought Process • Took {think_elapsed:.1f}s" if thought_content else "🧠 AI Thought Process"
             thought_panel = Panel(
                 Text(thought_content, style="italic grey50"),
                 title=thought_title,
@@ -61,10 +64,10 @@ def main():
                 padding=(0, 1)
             ) if thought_content else Text("")
 
-            answer_render = Markdown(answer_content) if answer_content else Text("正在生成回答...", style="dim")
+            answer_render = Markdown(answer_content) if answer_content else Text("Answer is being generated...", style="dim")
             answer_panel = Panel(
                 answer_render,
-                title="✨ 正式回答",
+                title="✨ Answer",
                 box=ROUNDED,
                 border_style="magenta",
                 padding=(0, 1)
@@ -91,7 +94,7 @@ def main():
                 import asyncio
                 asyncio.run(run_stream())
             except KeyboardInterrupt:
-                console.print("\n[yellow]⚠️ 生成已被中断[/yellow]")
+                console.print("\n[yellow]⚠️  Answer generation has been interrupted[/yellow]")
             finally:
                 # 最终统计
                 clean_text = raw_text.replace(THINK_START, "").strip()
@@ -102,11 +105,11 @@ def main():
                 else:
                     final_thought = ""
                     final_answer = clean_text.strip()
-                console.print(f"\n[green]✅ 本地会话完成！[/green]")
-                console.print(f"[dim]📊 统计：思考内容 {len(final_thought)} 字符 | 回答内容 {len(final_answer)} 字符 | 思考耗时 {think_elapsed:.1f}s[/dim]")
+                console.print(f"\n[green]✅ Local session completed![/green]")
+                console.print(f"[dim]📊 Statistics: Thought content {len(final_thought)} chars | Answer content {len(final_answer)} chars | Thought time {think_elapsed:.1f}s[/dim]")
     else:
         # 非流式模式
-        console.print("\n[dim blue]>>> 非流式生成模式 <<<[/dim blue]\n")
+        console.print("\n[dim blue]>>> Non-Streaming Generation Mode <<<[/dim blue]\n")
         import asyncio
         raw_text = asyncio.run(llm.generate(args.prompt, args.max_tokens, args.temperature, args.top_p))
         clean_text = raw_text.replace(THINK_START, "").strip()
@@ -122,7 +125,7 @@ def main():
         if final_thought:
             final_parts.append(Panel(
                 Text(final_thought, style="italic grey50"),
-                title="🧠 AI 思考过程",
+                title="🧠 AI Thought Process",
                 box=ROUNDED,
                 border_style="blue",
                 padding=(0, 1)
@@ -130,14 +133,14 @@ def main():
             final_parts.append(Text("\n"))
         final_parts.append(Panel(
             Markdown(final_answer),
-            title="✨ 正式回答",
+            title="✨ Answer",
             box=ROUNDED,
             border_style="magenta",
             padding=(0, 1)
         ))
         console.print(Group(*final_parts))
-        console.print(f"\n[green]✅ 本地会话完成！[/green]")
-        console.print(f"[dim]📊 统计：思考内容 {len(final_thought)} 字符 | 回答内容 {len(final_answer)} 字符[/dim]")
+        console.print(f"\n[green]✅ Local session completed![/green]")
+        console.print(f"[dim]📊 Statistics: Thought content {len(final_thought)} chars | Answer content {len(final_answer)} chars[/dim]")
 
 if __name__ == "__main__":
     main()
