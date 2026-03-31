@@ -7,11 +7,30 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Frontend directories and files
-/frontend_AIChat/node_modules
-/frontend_OreUI/node_modules
-/frontend_OreUI/dist
-/frontend_OreUI/.vscode
+# .NET Razor Build Output
+/frontend_dotnet/bin/
+/frontend_dotnet/obj/
+
+# Ignore additional .NET build and IDE files for the local frontend project
+# These are generated artifacts and user/IDE files that should not be committed
+/frontend_dotnet/.vs/
+/frontend_dotnet/publish/
+/frontend_dotnet/PublishProfiles/
+/frontend_dotnet/packages/
+/frontend_dotnet/*.user
+/frontend_dotnet/*.suo
+/frontend_dotnet/*.userosscache
+/frontend_dotnet/*.sln.docstates
+/frontend_dotnet/Properties/launchSettings.json
+
+# Runtime and build outputs
+/frontend_dotnet/*.pdb
+/frontend_dotnet/*.dll
+/frontend_dotnet/*.exe
+/frontend_dotnet/*.runtimeconfig.json
+/frontend_dotnet/*.deps.json
+/frontend_dotnet/*.nupkg
+
 
 # Other files
 .DS_Store
