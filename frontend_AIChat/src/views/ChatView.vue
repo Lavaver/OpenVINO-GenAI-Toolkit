@@ -1,11 +1,16 @@
 <template>
     <!-- 聊天容器 -->
     <div class="chat-container">
-        <!-- 聊天头部，包含标题和设置按钮 -->
-        <div class="chat-header">
-            <h1><img src="/logo.svg" alt="OpenVINO™" style="height: 24px; margin-right: 8px;"> GenAI Webapp</h1>
-            <el-button circle :icon="Setting" @click="showSettings = true" />
-        </div>
+                <!-- 聊天头部，包含标题和设置按钮 -->
+                <div class="chat-header mdui-toolbar">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <img src="/logo.svg" alt="OpenVINO™" style="height: 28px; margin-right: 8px;">
+                            <div class="mdui-typo-title">GenAI Webapp</div>
+                        </div>
+                        <button class="mdui-btn mdui-btn-icon mdui-ripple" @click="showSettings = true">
+                            <span class="material-symbols-outlined">settings</span>
+                        </button>
+                </div>
 
         <!-- 消息容器，显示对话消息 -->
         <div class="messages-container" ref="messagesContainer">
@@ -13,9 +18,12 @@
                 <chat-message v-for="message in messages" :key="message.id" :message="message"
                     :loading="message.loading" @update="handleMessageUpdate" @delete="handleMessageDelete" @regenerate="handleRegenerate" />
             </template>
-            <div v-else class="empty-state">
-                <el-empty description="今天想聊点什么？" />
-            </div>
+                        <div v-else class="empty-state">
+                                <div class="mdui-center" style="padding:40px 0;color:var(--text-color-secondary)">
+                                    <div style="font-size:48px;"><span class="material-symbols-outlined">chat</span></div>
+                                    <div style="margin-top:8px;">今天想聊点什么？</div>
+                                </div>
+                        </div>
         </div>
 
         <!-- 聊天输入框 -->
@@ -28,7 +36,6 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { Setting } from '@element-plus/icons-vue'
 import { useChatStore } from '../stores/chat'
 import { chatApi } from '../utils/api'
 import { messageHandler } from '../utils/messageHandler'

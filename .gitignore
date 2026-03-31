@@ -7,7 +7,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-/frontend/node_modules
+# Frontend directories and files
+/frontend_AIChat/node_modules
+/frontend_OreUI/node_modules
+/frontend_OreUI/dist
+/frontend_OreUI/.vscode
+
+# Other files
 .DS_Store
 dist
 dist-ssr
@@ -16,7 +22,53 @@ coverage
 
 /cypress/videos/
 /cypress/screenshots/
-/__pycache__
+
+# Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+pip-wheel-metadata/
+*.egg-info/
+
+# Virtual environments
+.env
+.env.*
+.env.local
+.envrc
+venv/
+ENV/
+env/
+.venv/
+venv.bak/
+
+# Pytest / coverage
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Mypy / type caches
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Jupyter
+.ipynb_checkpoints
 
 # Editor directories and files
 .vscode/*
@@ -28,4 +80,11 @@ coverage
 *.sln
 *.sw?
 
+# TypeScript build info
 *.tsbuildinfo
+
+# Node / package managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

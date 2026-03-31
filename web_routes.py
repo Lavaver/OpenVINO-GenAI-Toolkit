@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -15,15 +15,16 @@ class ChatRequest(BaseModel):
 
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    """返回聊天界面"""
+    """Return the chat interface"""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @router.post("/api/chat")
 async def chat_stream(request: ChatRequest, req: Request):
-    """SSE 流式聊天端点"""
+    """SSE endpoint for streaming chat responses"""
     llm: LLMService = req.app.state.llm
 
     async def generate():
+        """Stream chat responses using SSE"""
         try:
             async for token in llm.generate_stream(
                 request.prompt,
@@ -31,7 +32,7 @@ async def chat_stream(request: ChatRequest, req: Request):
                 request.temperature,
                 request.top_p
             ):
-                # 直接发送 token 字符串（前端自行解析 <think> 标签）
+                # Directly send the token string (frontend and console parse the <think> tag themselves)
                 yield f"data: {token}\n\n"
         except Exception as e:
             yield f"data: [ERROR] {str(e)}\n\n"

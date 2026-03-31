@@ -1,5 +1,5 @@
 {
-  "name": "openvino-genai-toolkit-webapp",
+  "name": "openvino-genai-toolkit-webapp-webchat-interface",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.1",
+    
     "axios": "^1.7.7",
-    "element-plus": "^2.8.8",
+    
     "highlight.js": "^11.10.0",
     "markdown-it": "^14.1.0",
     "markdown-it-highlightjs": "^4.0.1",

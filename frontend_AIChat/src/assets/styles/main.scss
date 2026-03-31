@@ -1,5 +1,4 @@
 @use 'variables.scss';
-@use 'element-theme.scss';
 
 * {
   margin: 0;
@@ -19,13 +18,43 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-// 为主要元素添加平滑过渡效果
-.el-button, 
-.el-input, 
-.el-select, 
-.el-drawer,
-.el-form-item,
-.message-container, 
+/* 使用 Roboto 为 Material 视觉基础 */
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+
+/* MDUI / Material 3 主题样式小调整 */
+.mdui-appbar {
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.mdui-container {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* 将 mdui 按钮的 primary 颜色与主题变量对齐 */
+.mdui-btn.mdui-color-primary,
+.mdui-btn.mdui-color-primary:focus,
+.mdui-btn.mdui-color-primary:hover {
+  background-color: var(--md-sys-color-primary) !important;
+  color: var(--md-sys-color-on-primary) !important;
+  box-shadow: none !important;
+}
+
+/* 适配文本字段与卡片的圆角和阴影 */
+.mdui-textfield, .mdui-card {
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--box-shadow);
+}
+
+// 为主要元素添加平滑过渡效果（MDUI 元素）
+.mdui-btn,
+.mdui-textfield,
+.mdui-card,
+.message-container,
 .message-text,
 .chat-header,
 .chat-input-container {

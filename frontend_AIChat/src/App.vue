@@ -1,13 +1,20 @@
 <template>
-  <el-config-provider >
-    <div class="app-container">
+  <div class="app-root">
+    <!-- 顶部 AppBar，使用 MDUI 样式做视觉统一 -->
+    <header class="mdui-appbar mdui-appbar-fixed">
+      <div class="mdui-toolbar mdui-container">
+        <a class="mdui-typo-title">OpenVINO™ GenAI</a>
+      </div>
+    </header>
+
+    <div class="app-container mdui-container">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
         </transition>
       </router-view>
     </div>
-  </el-config-provider>
+  </div>
 </template>
 
 <script setup>

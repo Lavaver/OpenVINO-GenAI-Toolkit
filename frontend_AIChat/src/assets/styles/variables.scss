@@ -1,5 +1,18 @@
 // :root 选择器通常用于定义全局 CSS 变量（也称为自定义属性）,整个文档中被引用和使用，可以通过 var() 函数来引用这些变量
 :root {
+  /* Material 3 token mappings (基础 M3 变量，供组件使用) */
+  --md-sys-color-primary: #409eff;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #d9f0ff;
+  --md-sys-color-on-primary-container: #001427;
+  --md-sys-color-secondary: #6b7a86;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-background: var(--bg-color);
+  --md-sys-color-surface: var(--bg-color);
+  --md-sys-color-on-surface: var(--text-color-primary);
+  --md-sys-color-error: #b00020;
+  --md-sys-color-on-error: #ffffff;
+
   // 主题色
   --primary-color: #409eff;
   --success-color: #67c23a;

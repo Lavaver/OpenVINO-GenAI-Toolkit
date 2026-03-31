@@ -7,6 +7,9 @@ from rich.text import Text
 console = Console()
 
 def print_ascii_art():
+    """
+    Welcome to OpenVINO GenAI Toolkit!
+    """
 
     # 原始ASCII艺术字符串（仅包含$和空格）
     ascii_art_raw = """

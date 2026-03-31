@@ -1,18 +1,15 @@
 <template>
   <!-- 消息容器，根据消息角色和加载状态动态调整样式 -->
-  <div 
+  <div
     class="message-container"
     :class="[
       message.role === 'assistant' ? 'message-assistant' : 'message-user',
-      { 'loading': loading }
+      { loading }
     ]"
   >
     <!-- 消息头像，根据消息角色显示不同图标 -->
     <div class="message-avatar">
-      <el-avatar 
-        :icon="message.role === 'assistant' ? 'ChatRound' : 'User'"
-        :class="message.role"
-      />
+      <span class="material-symbols-outlined avatar-icon">{{ message.role === 'assistant' ? 'support_agent' : 'person' }}</span>
     </div>
     <!-- 消息内容，根据加载状态显示不同内容 -->
     <div class="message-content">
@@ -59,23 +56,24 @@
 
       <!-- 编辑模式 -->
       <div class="message-edit" v-if="isEditing">
-        <el-input
-          v-model="editContent"
-          type="textarea"
-          :rows="2"
-          :autosize="{ minRows: 2, maxRows: 6 }"
-          ref="editInputRef"
-          @keydown.enter.exact.prevent="handleEditKeydown"
-          @keydown.esc="cancelEdit"
-        />
+        <div class="mdui-textfield edit-textfield">
+          <textarea
+            class="mdui-textfield-input"
+            v-model="editContent"
+            rows="2"
+            ref="editInputRef"
+            @keydown.enter.exact.prevent="handleEditKeydown"
+            @keydown.esc="cancelEdit"
+          ></textarea>
+        </div>
         <div class="edit-actions">
-          <el-button size="small" @click="cancelEdit">取消</el-button>
-          <el-button type="primary" size="small" @click="saveEdit">保存</el-button>
+          <button class="mdui-btn mdui-ripple" @click="cancelEdit">取消</button>
+          <button class="mdui-btn mdui-ripple mdui-color-primary" @click="saveEdit">保存</button>
         </div>
       </div>
 
       <div class="message-loading" v-if="loading">
-        <el-icon class="is-loading"><Loading /></el-icon>
+        <span class="loading-dots"></span>
         正在思考...
       </div>
 
@@ -84,36 +82,21 @@
         <span class="message-time">{{ formatTime(message.timestamp) }}</span>
         <!-- 用户消息的操作按钮 -->
         <div class="message-actions" v-if="!loading && message.role === 'user' && !isEditing">
-          <el-button-group>
-            <el-button type="text" size="small" @click="startEdit">
-              <el-icon><Edit /></el-icon>
-            </el-button>
-            <el-button type="text" size="small" @click="handleDelete">
-              <el-icon><Delete /></el-icon>
-            </el-button>
-          </el-button-group>
+          <button class="mdui-btn mdui-btn-icon mdui-ripple" @click="startEdit" title="编辑">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button class="mdui-btn mdui-btn-icon mdui-ripple" @click="handleDelete" title="删除">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
         </div>
         <!-- AI助手消息的操作按钮 -->
         <div class="message-actions" v-if="!loading && message.role === 'assistant'">
-          <el-button-group>
-            <el-button 
-              type="text" 
-              size="small" 
-              @click="handleRegenerate" 
-              :title="'重新生成'"
-              :disabled="isLoading"
-            >
-              <el-icon><RefreshRight /></el-icon>
-            </el-button>
-            <el-button 
-              type="text" 
-              size="small" 
-              @click="handleCopyAll" 
-              :title="'复制全部'"
-            >
-              <el-icon><CopyDocument /></el-icon>
-            </el-button>
-          </el-button-group>
+          <button class="mdui-btn mdui-btn-icon mdui-ripple" @click="handleRegenerate" :title="'重新生成'" :disabled="isLoading">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+          <button class="mdui-btn mdui-btn-icon mdui-ripple" @click="handleCopyAll" title="复制全部">
+            <span class="material-symbols-outlined">content_copy</span>
+          </button>
         </div>
       </div>
     </div>
@@ -123,8 +106,6 @@
 <script setup>
 import { computed, ref, nextTick } from 'vue'
 import { renderMarkdown } from '../utils/markdown'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, Delete, RefreshRight, CopyDocument } from '@element-plus/icons-vue'
 import { useChatStore } from '../stores/chat'
 
 // 定义组件属性
@@ -157,7 +138,7 @@ const startEdit = async () => {
   isEditing.value = true
   // 等待 DOM 更新后聚焦输入框
   await nextTick()
-  editInputRef.value?.input?.focus()
+  editInputRef.value?.focus && editInputRef.value.focus()
 }
 
 // 取消编辑
@@ -169,7 +150,11 @@ const cancelEdit = () => {
 // 保存编辑
 const saveEdit = () => {
   if (!editContent.value.trim()) {
-    ElMessage.warning('消息内容不能为空')
+    if (window.mdui && window.mdui.snackbar) {
+      window.mdui.snackbar({ message: '消息内容不能为空' })
+    } else {
+      alert('消息内容不能为空')
+    }
     return
   }
   
@@ -194,18 +179,10 @@ const saveEdit = () => {
 // 删除消息
 const handleDelete = async () => {
   try {
-    await ElMessageBox.confirm(
-      '确定要删除这条消息吗？',
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      }
-    )
-    emit('delete', props.message)
-  } catch {
-    // 用户取消删除操作
+    const confirmed = window.confirm('确定要删除这条消息吗？')
+    if (confirmed) emit('delete', props.message)
+  } catch (e) {
+    // ignore
   }
 }
 
@@ -282,10 +259,18 @@ const previewImage = (imageUrl) => {
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text)
-    ElMessage.success('代码已复制到剪贴板')
+    if (window.mdui && window.mdui.snackbar) {
+      window.mdui.snackbar({ message: '代码已复制到剪贴板' })
+    } else {
+      alert('代码已复制到剪贴板')
+    }
   } catch (err) {
     console.error('复制失败:', err)
-    ElMessage.error('复制失败')
+    if (window.mdui && window.mdui.snackbar) {
+      window.mdui.snackbar({ message: '复制失败' })
+    } else {
+      alert('复制失败')
+    }
   }
 }
 
@@ -308,19 +293,25 @@ const handleEditKeydown = (e) => {
 
 // 处理重新生成
 const handleRegenerate = () => {
-  console.log('重新生成')
   emit('regenerate', props.message)
 }
 
 // 复制全部内容
 const handleCopyAll = async () => {
   try {
-    // 只复制正式回答，不包括思考过程
     await navigator.clipboard.writeText(answerContent.value)
-    ElMessage.success('内容已复制到剪贴板')
+    if (window.mdui && window.mdui.snackbar) {
+      window.mdui.snackbar({ message: '内容已复制到剪贴板' })
+    } else {
+      alert('内容已复制到剪贴板')
+    }
   } catch (err) {
     console.error('复制失败:', err)
-    ElMessage.error('复制失败')
+    if (window.mdui && window.mdui.snackbar) {
+      window.mdui.snackbar({ message: '复制失败' })
+    } else {
+      alert('复制失败')
+    }
   }
 }
 </script>
@@ -520,13 +511,21 @@ const handleCopyAll = async () => {
 
 .message-avatar {
   flex-shrink: 0;
-  
-  .el-avatar {
-    background-color: var(--primary-color);
-    
-    &.assistant {
-      background-color: var(--success-color);
-    }
+
+  .avatar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--primary-color);
+    color: var(--md-sys-color-on-primary);
+    font-size: 20px;
+  }
+
+  .avatar-icon[role='assistant'], .avatar-icon.assistant {
+    background: var(--success-color);
   }
 }
 
@@ -712,10 +711,6 @@ const handleCopyAll = async () => {
   align-items: center;
   gap: 0.5rem;
   color: var(--text-color-secondary);
-  
-  .el-icon {
-    font-size: 1.2rem;
-  }
 }
 
 .message-meta {
@@ -741,32 +736,22 @@ const handleCopyAll = async () => {
   gap: 0.25rem;
   opacity: 0.6;
   transition: opacity 0.2s ease;
-  
-  &:hover {
-    opacity: 1;
-  }
-  
-  .el-button {
-    padding: 2px 4px;
-    height: 20px;
-    transition: all 0.2s ease;
-    
-    .el-icon {
-      font-size: 14px;
-    }
-    
+
+  &:hover { opacity: 1; }
+
+  .mdui-btn {
+    padding: 6px;
+    height: 36px;
+    min-width: 36px;
+    transition: all 0.12s ease;
+    border-radius: 8px;
+
+    span.material-symbols-outlined { font-size: 16px; }
+
     &:hover {
-      color: var(--primary-color);
+      color: var(--md-sys-color-on-primary);
       background-color: var(--hover-bg-color);
-      transform: scale(1.05);
-    }
-    
-    // 深色模式下的按钮样式
-    [data-theme="dark"] & {
-      &:hover {
-        background-color: var(--active-bg-color);
-        box-shadow: 0 2px 4px rgba(92, 174, 253, 0.2);
-      }
+      transform: translateY(-2px);
     }
   }
 }

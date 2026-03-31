@@ -1,9 +1,7 @@
 import { createApp, nextTick } from 'vue'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import ElementPlus from 'element-plus'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import 'element-plus/dist/index.css'
+// Element Plus removed from UI layer — keeping frontend lightweight without Element CSS
 import './assets/styles/main.scss'
 import router from './router'
 import App from './App.vue'
@@ -15,17 +13,23 @@ const app = createApp(App)
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
-// 注册所有图标
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
-
 app.use(pinia)
 app.use(router)
-app.use(ElementPlus)
 
 // 挂载应用
 app.mount('#app')
+
+// Initialize MDUI if loaded (CDN injects global `mdui`)
+if (typeof window !== 'undefined' && window.mdui) {
+  try {
+    // Mutation will scan the DOM for mdui components
+    window.mdui.mutation && window.mdui.mutation()
+  } catch (e) {
+    // 非阻塞日志
+    // eslint-disable-next-line no-console
+    console.warn('MDUI initialization error:', e)
+  }
+}
 
 // Element Plus 主题适配
 import { useSettingsStore } from './stores/settings'
