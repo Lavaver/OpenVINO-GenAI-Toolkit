@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def _normalize_tool_calls_payload(payload: dict) -> Optional[dict]:
+    # Normalize tool_calls payload to OpenAI standard format
     """Normalize payload to OpenAI standard tool_calls format."""
     if not isinstance(payload, dict):
         return None

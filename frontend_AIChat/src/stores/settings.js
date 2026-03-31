@@ -9,6 +9,8 @@ export const useSettingsStore = defineStore('settings', {
         themeMode: 'system',
         // 是否启用深色模式，默认为 false
         isDarkMode: false,
+        // 主色（十六进制），可用于 setColorScheme
+        primaryColor: '#0061a4',
         // 温度参数，控制生成文本的随机性，默认值为 0.7
         temperature: 0.7,
         // 最大 token 数量，默认值为 32768
@@ -33,13 +35,23 @@ export const useSettingsStore = defineStore('settings', {
         // 应用主题
         applyTheme(isDark) {
             this.isDarkMode = isDark
+            // 保持老的 data-theme 用于兼容现有样式选择器
             document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
+
+            // 同时为 MDUI 添加主题类，mdui 支持 mdui-theme-auto/light/dark
+            document.documentElement.classList.remove('mdui-theme-auto', 'mdui-theme-light', 'mdui-theme-dark')
+            if (this.themeMode === 'system') {
+                document.documentElement.classList.add('mdui-theme-auto')
+            } else if (isDark) {
+                document.documentElement.classList.add('mdui-theme-dark')
+            } else {
+                document.documentElement.classList.add('mdui-theme-light')
+            }
         },
 
         // 设置主题模式
         setThemeMode(mode) {
             this.themeMode = mode
-            
             if (mode === 'system') {
                 const isDark = this.detectSystemTheme()
                 this.applyTheme(isDark)
@@ -87,6 +99,36 @@ export const useSettingsStore = defineStore('settings', {
                     // 兼容旧版浏览器
                     mediaQuery.addListener(handleChange)
                 }
+            }
+
+            // 在初始化时尝试应用已保存的主色
+            if (typeof window !== 'undefined') {
+                // 在浏览器环境下调用 setColorScheme，以便 mdui 的 CSS 变量被生成
+                this.setColorScheme(this.primaryColor).catch(() => {})
+            }
+        },
+
+        // 使用 mdui 的 setColorScheme 动态生成配色方案
+        async setColorScheme(hex) {
+            if (!hex) return
+            // 允许传入 #rrggbb 或不带 # 的十六进制
+            let color = hex
+            if (color && color[0] !== '#') color = `#${color}`
+            try {
+                // 优先使用全局 mdui（CDN 加载时）
+                if (typeof window !== 'undefined' && window.mdui && window.mdui.functions && typeof window.mdui.functions.setColorScheme === 'function') {
+                    window.mdui.functions.setColorScheme(color)
+                } else {
+                    // 动态模块导入 mdui 的 setColorScheme 函数（通过 unpkg CDN）
+                    const mod = await import('https://unpkg.com/mdui@2/functions/setColorScheme.js')
+                    const fn = mod.setColorScheme || mod.default || mod
+                    if (typeof fn === 'function') fn(color)
+                }
+                this.primaryColor = color
+            } catch (e) {
+                // 非阻塞日志
+                // eslint-disable-next-line no-console
+                console.warn('setColorScheme failed:', e)
             }
         },
 

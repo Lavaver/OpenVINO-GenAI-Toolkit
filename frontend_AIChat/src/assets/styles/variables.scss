@@ -1,102 +1,110 @@
-// :root 选择器通常用于定义全局 CSS 变量（也称为自定义属性）,整个文档中被引用和使用，可以通过 var() 函数来引用这些变量
+// :root 使用 MDUI 设计令牌（Design Tokens）映射。
+// 我们把 mdui 的颜色/形状/阴影/动效变量当作源头，然后把项目原有的变量指向这些令牌，
+// 这样在调用 mdui 的 setColorScheme 或切换主题时，项目样式会自动跟随变化。
 :root {
-  /* Material 3 token mappings (基础 M3 变量，供组件使用) */
-  --md-sys-color-primary: #409eff;
-  --md-sys-color-on-primary: #ffffff;
-  --md-sys-color-primary-container: #d9f0ff;
-  --md-sys-color-on-primary-container: #001427;
-  --md-sys-color-secondary: #6b7a86;
-  --md-sys-color-on-secondary: #ffffff;
-  --md-sys-color-background: var(--bg-color);
-  --md-sys-color-surface: var(--bg-color);
-  --md-sys-color-on-surface: var(--text-color-primary);
-  --md-sys-color-error: #b00020;
-  --md-sys-color-on-error: #ffffff;
+  /* --- MDUI 颜色令牌（RGB 三元组，注意不带 rgb()） --- */
+  --mdui-color-primary-light: 103, 80, 164;
+  --mdui-color-primary-dark: 208, 188, 255;
+  --mdui-color-primary: var(--mdui-color-primary-light);
 
-  // 主题色
-  --primary-color: #409eff;
-  --success-color: #67c23a;
-  --warning-color: #e6a23c;
-  --danger-color: #f56c6c;
-  --info-color: #909399;
+  --mdui-color-on-primary-light: 255, 255, 255;
+  --mdui-color-on-primary-dark: 55, 30, 115;
+  --mdui-color-on-primary: var(--mdui-color-on-primary-light);
 
-  // 背景色
-  --bg-color: #ffffff;
-  --bg-color-secondary: #f5f7fa;
-  
-  // 文字颜色
-  --text-color-primary: #303133;
-  --text-color-regular: #606266;
-  --text-color-secondary: #909399;
+  --mdui-color-background-light: 254, 247, 255;
+  --mdui-color-background-dark: 20, 18, 24;
+  --mdui-color-background: var(--mdui-color-background-light);
 
-  // 边框颜色
-  --border-color: #dcdfe6;
-  
-  // 阴影
-  --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  
-  // 圆角
-  --border-radius: 4px;
-  --border-radius-large: 8px;
+  --mdui-color-surface-light: 254, 247, 255;
+  --mdui-color-surface-dark: 20, 18, 24;
+  --mdui-color-surface: var(--mdui-color-surface-light);
 
-  // 交互状态颜色
-  --hover-bg-color: #f5f7fa;
-  --active-bg-color: #e6f4ff;
-  --disabled-bg-color: #f5f5f5;
-  --disabled-text-color: #c0c4cc;
+  --mdui-color-on-background-light: 28, 27, 31;
+  --mdui-color-on-background-dark: 230, 225, 229;
+  --mdui-color-on-background: var(--mdui-color-on-background-light);
 
-  // 代码相关的颜色和字体
+  --mdui-color-on-surface-light: 28, 27, 31;
+  --mdui-color-on-surface-dark: 230, 225, 229;
+  --mdui-color-on-surface: var(--mdui-color-on-surface-light);
+
+  --mdui-color-secondary-light: 98, 91, 113;
+  --mdui-color-secondary-dark: 204, 194, 220;
+  --mdui-color-secondary: var(--mdui-color-secondary-light);
+
+  --mdui-color-error-light: 179, 38, 30;
+  --mdui-color-error-dark: 242, 184, 181;
+  --mdui-color-error: var(--mdui-color-error-light);
+
+  --mdui-color-outline-light: 196, 199, 197;
+  --mdui-color-outline-dark: 68, 71, 70;
+
+  /* 阴影颜色三元组 */
+  --mdui-color-shadow: 0, 0, 0;
+
+  /* --- 形状令牌 --- */
+  --mdui-shape-corner-none: 0;
+  --mdui-shape-corner-extra-small: 0.25rem;
+  --mdui-shape-corner-small: 0.5rem;
+  --mdui-shape-corner-medium: 0.75rem;
+  --mdui-shape-corner-large: 1rem;
+  --mdui-shape-corner-extra-large: 1.75rem;
+  --mdui-shape-corner-full: 1000rem;
+
+  /* --- 抬升（阴影）令牌（使用 mdui 的阴影颜色） --- */
+  --mdui-elevation-level1: 0 0.5px 1.5px 0 rgba(var(--mdui-color-shadow), 0.19), 0 0 1px 0 rgba(var(--mdui-color-shadow), 0.039);
+  --mdui-elevation-level2: 0 0.85px 3px 0 rgba(var(--mdui-color-shadow), 0.19), 0 0.25px 1px 0 rgba(var(--mdui-color-shadow), 0.039);
+  --mdui-elevation-level3: 0 1.25px 5px 0 rgba(var(--mdui-color-shadow), 0.19), 0 0.3333px 1.5px 0 rgba(var(--mdui-color-shadow), 0.039);
+
+  /* --- 动画/时长令牌（部分示例） --- */
+  --mdui-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --mdui-motion-duration-short1: 40ms;
+
+  /* --- 项目现有变量映射到 MDUI 令牌，优先使用 rgb(var(--mdui-...)) 以便支持透明度 */
+  --primary-color: rgb(var(--mdui-color-primary));
+  --success-color: rgb(var(--mdui-color-secondary));
+  --warning-color: rgb(var(--mdui-color-primary-container, 234,221,255));
+  --danger-color: rgb(var(--mdui-color-error));
+
+  --bg-color: rgb(var(--mdui-color-background));
+  --bg-color-secondary: rgb(var(--mdui-color-surface-container-low, 247,242,250));
+  --text-color-primary: rgb(var(--mdui-color-on-background));
+  --text-color-regular: rgba(var(--mdui-color-on-surface), 0.85);
+  --text-color-secondary: rgba(var(--mdui-color-on-surface), 0.6);
+
+  --border-color: rgba(var(--mdui-color-outline-light), 1);
+  --box-shadow: var(--mdui-elevation-level2);
+
+  --border-radius: var(--mdui-shape-corner-small);
+  --border-radius-large: var(--mdui-shape-corner-large);
+
+  --hover-bg-color: rgba(var(--mdui-color-primary), 0.06);
+  --active-bg-color: rgba(var(--mdui-color-primary), 0.12);
+  --disabled-bg-color: rgb(245,245,245);
+  --disabled-text-color: rgb(192,196,204);
+
   --code-font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
-  --code-block-bg: #ffffff;
-  --code-header-bg: #f1f3f5;
-  --code-text: #476582;
-  --code-bg: rgba(27,31,35,0.05);
+  --code-block-bg: rgb(var(--mdui-color-surface));
+  --code-header-bg: rgba(var(--mdui-color-surface), 0.95);
+  --code-text: rgb(var(--mdui-color-on-surface));
+  --code-bg: rgba(var(--mdui-color-on-surface), 0.06);
 
-  // 分割线颜色
-  --divider-color: #e4e7ed;
-  
-  // 滚动条颜色
+  --divider-color: rgba(var(--mdui-color-outline-light), 0.15);
+
   --scrollbar-color: #c1c1c1;
-  --scrollbar-bg: #f1f1f1;
+  --scrollbar-bg: rgb(var(--mdui-color-surface));
 }
 
-[data-theme="dark"] {
-  // 调整主题色以适应深色背景，提高对比度
-  --primary-color: #5caefd;
-  --success-color: #95d475;
-  --warning-color: #ebbc50;
-  --danger-color: #f78989;
-  --info-color: #a6a9ad;
-
-  // 背景色
-  --bg-color: #1a1a1a;
-  --bg-color-secondary: #242424;
-  
-  // 文字颜色
-  --text-color-primary: #ffffff;
-  --text-color-regular: #e0e0e0;
-  --text-color-secondary: #909399;
-
-  // 边框颜色
-  --border-color: #4c4c4c;
-  
-  // 阴影
-  --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.3);
-
-  // 深色模式特有的交互状态颜色
-  --hover-bg-color: #333333;
-  --active-bg-color: #444444;
-  --disabled-bg-color: #2c2c2c;
-  --disabled-text-color: #6c6c6c;
-
-  // 暗色模式下代码相关的颜色
-  --code-block-bg: #1e1e1e;
-  --code-header-bg: #2d2d2d;
-  --code-text: #d4d4d4;
-  --code-bg: rgba(255,255,255,0.1);
-
-  // 深色模式特有变量
-  --divider-color: #434343;
-  --scrollbar-color: #6b6b6b;
-  --scrollbar-bg: #2c2c2c;
+/* 支持通过 mdui-theme-dark 类或 data-theme="dark" 覆盖深色变量 */
+.mdui-theme-dark, [data-theme="dark"] {
+  --primary-color: rgb(var(--mdui-color-primary-dark));
+  --bg-color: rgb(var(--mdui-color-background-dark));
+  --bg-color-secondary: rgb(var(--mdui-color-surface-dark));
+  --text-color-primary: rgb(var(--mdui-color-on-background-dark));
+  --text-color-regular: rgba(var(--mdui-color-on-surface-dark), 0.9);
+  --text-color-secondary: rgba(var(--mdui-color-on-surface-dark), 0.72);
+  --border-color: rgba(var(--mdui-color-outline-dark), 0.6);
+  --box-shadow: var(--mdui-elevation-level3);
+  --code-block-bg: rgb(var(--mdui-color-surface-dark));
+  --code-header-bg: rgba(var(--mdui-color-surface-dark), 0.95);
+  --divider-color: rgba(var(--mdui-color-outline-dark), 0.5);
 }

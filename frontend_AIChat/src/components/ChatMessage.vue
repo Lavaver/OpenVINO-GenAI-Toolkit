@@ -542,7 +542,7 @@ const handleCopyAll = async () => {
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   white-space: pre-wrap;
-  transition: all 0.3s ease;
+  transition: all var(--mdui-motion-duration-short2, 100ms) var(--mdui-motion-easing-standard, cubic-bezier(0.2,0,0,1));
   
   // 深色模式下增强阴影效果
   [data-theme="dark"] & {
@@ -738,22 +738,21 @@ const handleCopyAll = async () => {
   transition: opacity 0.2s ease;
 
   &:hover { opacity: 1; }
+    .mdui-btn {
+      padding: 6px;
+      height: 36px;
+      min-width: 36px;
+      transition: transform 0.12s ease, background-color 0.12s ease;
+      border-radius: var(--mdui-shape-corner-small);
 
-  .mdui-btn {
-    padding: 6px;
-    height: 36px;
-    min-width: 36px;
-    transition: all 0.12s ease;
-    border-radius: 8px;
+      span.material-symbols-outlined { font-size: 16px; }
 
-    span.material-symbols-outlined { font-size: 16px; }
-
-    &:hover {
-      color: var(--md-sys-color-on-primary);
-      background-color: var(--hover-bg-color);
-      transform: translateY(-2px);
+      &:hover {
+        color: var(--md-sys-color-on-primary);
+        background-color: rgba(var(--mdui-color-primary), var(--mdui-state-layer-hover, 0.08));
+        transform: translateY(-2px);
+      }
     }
-  }
 }
 
 .message-edit {

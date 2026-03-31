@@ -52,6 +52,16 @@
           <label>Top K</label>
           <input type="number" v-model.number="settings.topK" min="1" max="100" class="mdui-textfield-input" />
         </div>
+
+        <div class="form-row">
+          <label>主色（Primary）</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="color" v-model="settings.primaryColor" />
+            <input type="text" v-model="settings.primaryColor" class="mdui-textfield-input" style="width:120px" />
+            <button class="mdui-btn mdui-ripple" @click="applyPrimaryColor">应用主色</button>
+          </div>
+          <div class="form-item-tip">使用 MDUI 的 setColorScheme 生成整套配色方案</div>
+        </div>
       </div>
 
       <div class="settings-footer">
@@ -84,6 +94,7 @@ const visible = computed({
 const settings = reactive({
   themeMode: settingsStore.themeMode,
   isDarkMode: settingsStore.isDarkMode,
+  primaryColor: settingsStore.primaryColor,
   temperature: settingsStore.temperature,
   maxTokens: settingsStore.maxTokens,
   streamResponse: settingsStore.streamResponse,
@@ -106,6 +117,18 @@ const handleSave = () => {
     alert('设置已保存')
   }
   visible.value = false
+}
+
+const applyPrimaryColor = async () => {
+  try {
+    await settingsStore.setColorScheme(settings.primaryColor)
+    if (window.mdui && window.mdui.snackbar) {
+      window.mdui.snackbar({ message: '主色已应用' })
+    }
+  } catch (e) {
+    console.error('应用主色失败', e)
+    alert('应用主色失败')
+  }
 }
 </script>
 

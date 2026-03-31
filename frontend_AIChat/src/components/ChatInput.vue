@@ -126,9 +126,10 @@ const adjustHeight = () => {
 }
 
 .island-card {
-  border-radius: 14px;
+  border-radius: var(--mdui-shape-corner-extra-large);
   padding: 10px 14px;
-  background: var(--md-sys-color-surface);
+  background: var(--bg-color);
+  box-shadow: var(--box-shadow);
 }
 
 .island-inner {
@@ -142,7 +143,7 @@ const adjustHeight = () => {
 }
 
 .chat-textfield .mdui-textfield-input {
-  border-radius: 10px;
+  border-radius: var(--mdui-shape-corner-medium);
   padding: 10px 12px;
   min-height: 44px;
   max-height: 240px;
