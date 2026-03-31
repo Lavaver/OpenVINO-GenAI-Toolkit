@@ -1042,6 +1042,28 @@ async def list_models(req: Request, api_key: str = Depends(verify_api_key_depend
     response = ModelsResponse(data=models)
     return JSONResponse(content=response.dict())
 
+
+@router.get("/history")
+async def get_history(req: Request, api_key: str = Depends(verify_api_key_dependency)):
+    """Return stored chat history (simple in-memory list)."""
+    history = getattr(req.app.state, 'chat_history', [])
+    try:
+        return JSONResponse(content={"history": history})
+    except Exception:
+        return JSONResponse(content={"history": []})
+
+
+@router.post("/history")
+async def post_history(item: dict, req: Request, api_key: str = Depends(verify_api_key_dependency)):
+    """Append an item to in-memory chat history. Simple storage for demo purposes."""
+    if not hasattr(req.app.state, 'chat_history'):
+        req.app.state.chat_history = []
+    try:
+        req.app.state.chat_history.append(item)
+        return JSONResponse(content={"status": "ok"})
+    except Exception as e:
+        return JSONResponse(content={"status": "error", "error": str(e)}, status_code=500)
+
 # 工具调用响应格式
 class ToolCallResponse(BaseModel):
     toolCallId: str
