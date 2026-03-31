@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integration with GitHub Copilot for Visual Studio Code
 - Support for multiple devices (AUTO/CPU/GPU/NPU)
 - Vue.js based frontend
-- MCP (Model Callable Protocol) features
+
 
 ### Changed
 - Updated documentation and examples

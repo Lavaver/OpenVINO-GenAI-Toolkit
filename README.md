@@ -113,8 +113,7 @@ python bootstrap_console.py /path/to/your/model "Your question here" -d AUTO -s
   - `-p, --top-p`: Top-P sampling (0-1, default: 0.9)
   - `-s, --stream`: Enable streaming output (recommended)
 
-> [!NOTE]
-> MCP features provide a set of useful, model-callable utility interfaces. By default, it offers a basic set of MCP features including web search, RSS feeds, smart home support ([Home Assistant](https://www.home-assistant.io/docs/)), and file system operations. To enable one or more of these features, append `[web, rss, home-assistant, fs]` after the `--mcp` parameter. You can also write your own MCP feature interface using MCP packages and enable it with `--mcp [“filename.py”]`. For guidance on developing MCP feature interfaces with the MCP package in OpenVINO GenAI Toolkit, refer to the documentation under `/MCPs/Docs`. If utilizing smart home-related MCP feature interfaces, avoid using inference models whenever possible to accelerate the issuance of control commands to home appliances.
+
 
 
 
