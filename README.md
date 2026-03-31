@@ -34,12 +34,8 @@ This repository provides a post-installation utility suite for OpenVINO, facilit
 - **Keyboard Interrupt Handling** for graceful termination
 
 ### Frontend
-- **Vue.js Based Frontend** with [wjc7jx/AIchat](https://github.com/wjc7jx/AIchat) Interface
-- **OreUI Frontend** Based on [Spectrollay/OreUI](https://github.com/Spectrollay/OreUI) (This repo is a **Pure Native HTML without any frontend framework**, This repository uses Vue to rebuild the frontend)
-
 > [!NOTE]
-> We extend our gratitude to the [Spectrollay/OreUI](https://github.com/Spectrollay/OreUI) repository for its support in developing the new version of the OreUI frontend. The new frontend still requires testing. At present, we advise against placing excessive reliance on the new frontend, as it may exhibit unexpected behaviour. Should you encounter issues whilst using the new frontend, please include developer console information and backend debugging details when
-[raising an issue](https://github.com/Lavaver/OpenVINO-GenAI-Toolkit/issues). 
+> Due to the overly ambitious goals set for the frontend, some features have not been fully implemented. The frontend code will be removed from this repository and will no longer be included. Future frontend developments may be moved to a separate repository (perhaps). 
 
 ## 🚀 Quick Start
 
@@ -67,11 +63,7 @@ This repository provides a post-installation utility suite for OpenVINO, facilit
    pip install -r requirements.txt
    ```
 
-3. **Install frontend dependencies** (optional):
-   ```bash
-   cd frontend
-   npm install
-   ```
+
 
 ### Usage
 
@@ -124,36 +116,33 @@ python bootstrap_console.py /path/to/your/model "Your question here" -d AUTO -s
 > [!NOTE]
 > MCP features provide a set of useful, model-callable utility interfaces. By default, it offers a basic set of MCP features including web search, RSS feeds, smart home support ([Home Assistant](https://www.home-assistant.io/docs/)), and file system operations. To enable one or more of these features, append `[web, rss, home-assistant, fs]` after the `--mcp` parameter. You can also write your own MCP feature interface using MCP packages and enable it with `--mcp [“filename.py”]`. For guidance on developing MCP feature interfaces with the MCP package in OpenVINO GenAI Toolkit, refer to the documentation under `/MCPs/Docs`. If utilizing smart home-related MCP feature interfaces, avoid using inference models whenever possible to accelerate the issuance of control commands to home appliances.
 
-#### Frontend (Development)
 
-1. **Navigate to the frontend directory**:
-```bash
-cd frontend
-```
-
-2. **Install frontend dependencies**:
-```bash
-npm install
-```
-
-3. **Run the development server**:
-```bash
-npm run dev
-```
 
 ## 📁 Project Structure
 
 ```
 openvino-genai-toolkit/
+├── __pycache__/             # Python bytecode cache
+├── __init__.py              # Package initialization
+├── .gitignore               # Git ignore file
+├── asciiart.py              # ASCII art utilities
+├── auth.py                  # Authentication utilities
 ├── bootstrap_backend.py     # Backend API server
 ├── bootstrap_console.py     # Command-line interface
+├── CHANGELOG.md             # Changelog
 ├── config.py                # Configuration file
-├── requirements.txt         # Python dependencies
+├── copilot_calls.py         # GitHub Copilot tool calls
+├── favicon.ico              # Favicon
+├── internal_tools.py        # Internal tools
 ├── LICENSE                  # MIT License
-└── frontend/                # Web frontend
-    ├── index.html           # Frontend entry point
-    ├── package.json         # npm dependencies
-    └── node_modules/        # npm packages
+├── llm_service.py           # LLM service
+├── monitor_gui.py           # Monitor GUI
+├── openai_api.py            # OpenAI-compatible API
+├── README.md                # This README
+├── requirements.txt         # Python dependencies
+├── runtime_monitor.py       # Runtime monitor
+├── web_routes.py            # Web routes
+└── wintoast.py              # Windows toast notifications
 ```
 
 ## 🛠️ Dependencies
@@ -164,8 +153,6 @@ openvino-genai-toolkit/
 
 ### Development Dependencies
 - `rich` - Rich text formatting for CLI
-- `vue` - Frontend framework
-- `mdui` - Material Design UI (used for Material 3 styling)
 
 ## 📄 License
 
@@ -190,4 +177,4 @@ For issues and feature requests, please create an issue on the GitHub repository
   
 ---
 
-Made with ❤️ using OpenVINO and FastAPI and Vue.js
+Made with ❤️ using OpenVINO and FastAPI
