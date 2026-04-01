@@ -1,0 +1,50 @@
+name: Build build.json
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get tag information
+        id: tag_info
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG_NAME#v}
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          DATE_TIME=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "commit_hash=$COMMIT_HASH" >> $GITHUB_OUTPUT
+          echo "date_time=$DATE_TIME" >> $GITHUB_OUTPUT
+
+      - name: Generate build.json
+        run: |
+          VERSION="${{ steps.tag_info.outputs.version }}"
+          TAG_NAME="${{ steps.tag_info.outputs.tag_name }}"
+          COMMIT_HASH="${{ steps.tag_info.outputs.commit_hash }}"
+          DATE_TIME="${{ steps.tag_info.outputs.date_time }}"
+          
+          cat > build.json << EOF
+          {
+            "version": "$VERSION (tags/$TAG_NAME:$COMMIT_HASH, $DATE_TIME GMT+08:00)"
+          }
+          EOF
+          
+          cat build.json
+
+      - name: Commit and push build.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add build.json
+          git commit -m "Update build.json for ${{ steps.tag_info.outputs.tag_name }}"
+          git push
