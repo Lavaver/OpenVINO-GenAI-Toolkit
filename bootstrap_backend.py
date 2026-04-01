@@ -13,6 +13,7 @@ from wintoast import sendToast
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from i18n import _
 
 console = Console()
 
@@ -22,14 +23,14 @@ print_ascii_art()
 # 解析命令行参数
 def parse_args():
     parser = argparse.ArgumentParser(description="OpenVINO GenAI Web Server")
-    parser.add_argument("model_path", help="Model Directory Path (Local OpenVINO Format Models)")
-    parser.add_argument("-d", "--device", default="AUTO", help="Running Device (AUTO/CPU/GPU/NPU/Intel® Arc™)")
-    parser.add_argument("-p", "--port", type=int, default=8000, help="Server Port")
-    parser.add_argument("--key", type=str, help="Specify a specific API key. Only requests with this key will be granted access.")
-    parser.add_argument("--genkey", action="store_true", help="Generate a random API key in the format sk-[GUID]-localhost")
-    parser.add_argument("--api-custom", action="store_true", help="Enable custom API parameters via OpenAPI definitions")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode with additional console output")
-    parser.add_argument("--nogui", action="store_true", help="Disable monitor GUI windows")
+    parser.add_argument("model_path", help=_('cli.model_path.help'))
+    parser.add_argument("-d", "--device", default="AUTO", help=_('cli.device.help'))
+    parser.add_argument("-p", "--port", type=int, default=8000, help=_('cli.port.help'))
+    parser.add_argument("--key", type=str, help=_('cli.key.help'))
+    parser.add_argument("--genkey", action="store_true", help=_('cli.genkey.help'))
+    parser.add_argument("--api-custom", action="store_true", help=_('cli.api_custom.help'))
+    parser.add_argument("--debug", action="store_true", help=_('cli.debug.help'))
+    parser.add_argument("--nogui", action="store_true", help=_('cli.nogui.help'))
     return parser.parse_args()
 
 @asynccontextmanager
@@ -46,16 +47,16 @@ async def lifespan(app: FastAPI):
     if args.genkey:
         generated_key = api_key_manager.generate_api_key()
         api_key_manager.set_api_key(generated_key)
-        console.print(f"✅ A random API key has been generated: [aqua]{generated_key}[/aqua]")
+        console.print(f"✅ {_('server.api.key.generated', key=generated_key)}")
         console.print(f"🔒 Please use this key in the Authorization header: Authorization: Bearer {generated_key}")
     elif args.key:
         api_key_manager.set_api_key(args.key)
-        console.print(f"✅ The specified API key has been set: [aqua]{args.key}[/aqua]")
+        console.print(f"✅ {_('server.api.key.set', key=args.key)}")
         console.print(f"🔒 Please use this key in the Authorization header: Authorization: Bearer {args.key}")
     else:
         api_key_manager.set_api_key(None)
-        console.print("[yellow]⚠️ No API key has been set. Any request can access the service without authentication[/yellow].")
-        sendToast("API Key Not Set", "No API key has been set. Any request can access the service without authentication.")
+        console.print(f"[yellow]⚠️ {_('server.api.key.not.set')}[/yellow].")
+        sendToast("API Key Not Set", _('server.api.key.not.set'))
     
     # 加载模型并存储到应用状态
     app.state.llm = LLMService(args.model_path, args.device)
@@ -63,12 +64,12 @@ async def lifespan(app: FastAPI):
     # 启用调试模式
     app.state.debug_enabled = args.debug
     if args.debug:
-        console.print("🔧 Debug mode enabled")
+        console.print(f"🔧 {_('server.debug.enabled')}")
     
     # 启用自定义API参数
     app.state.api_custom = args.api_custom
     if args.api_custom:
-        console.print("✅ Custom API parameters enabled")
+        console.print(f"✅ {_('server.api.custom.enabled')}")
     
     yield
     # 清理代码（如果需要的话）
@@ -89,11 +90,11 @@ app.include_router(openai_router)
 
 @app.get("/")
 async def root():
-    return {"message": "OpenVINO GenAI API is running"}
+    return {"message": _('api.running')}
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {"status": _('api.healthy')}
 
 if __name__ == "__main__":
     import uvicorn

@@ -8,6 +8,9 @@ _tools = []
 _capacity_tokens = 192000
 
 def _flatten_content(c):
+    """
+    Recursively flatten a content object to a string.
+    """
     try:
         if c is None:
             return ""

@@ -11,29 +11,34 @@ except Exception:
     psutil = None
     _HAS_PSUTIL = False
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from i18n import _
+
 
 def start_monitor_gui(poll_interval_ms: int = 1000):
     """
     Start the runtime monitor GUI. This blocks (Tk mainloop) and should be run in the main thread.
     """
     root = tk.Tk()
-    root.title("OpenVINO GenAI Monitor")
+    root.title(_('gui.title'))
     root.geometry("1000x480")
 
     # Left: context window
     left = ttk.Frame(root)
     left.pack(side='left', fill='both', expand=True, padx=6, pady=6)
 
-    title = ttk.Label(left, text="Context Window", font=(None, 14, 'bold'))
+    title = ttk.Label(left, text=_('gui.context.window'), font=(None, 14, 'bold'))
     title.pack(anchor='w')
 
-    tokens_label = ttk.Label(left, text="Tokens: 0/192000 (0%)")
+    tokens_label = ttk.Label(left, text=_('gui.tokens'))
     tokens_label.pack(anchor='w')
 
     breakdown_box = tk.Text(left, height=5, wrap='none')
     breakdown_box.pack(fill='x', pady=(4, 6))
 
-    msgs_label = ttk.Label(left, text="Recent messages")
+    msgs_label = ttk.Label(left, text=_('gui.recent.messages'))
     msgs_label.pack(anchor='w')
 
     listbox = tk.Listbox(left)
@@ -46,16 +51,16 @@ def start_monitor_gui(poll_interval_ms: int = 1000):
         runtime_monitor.clear()
         listbox.delete(0, tk.END)
         breakdown_box.delete('1.0', tk.END)
-        tokens_label.config(text="Tokens: 0/192000 (0%)")
+        tokens_label.config(text=_('gui.tokens'))
 
-    compress_btn = ttk.Button(btn_frame, text="Compress Conversation", command=compress_conversation)
+    compress_btn = ttk.Button(btn_frame, text=_('gui.compress.conversation'), command=compress_conversation)
     compress_btn.pack(side='left')
 
     # Right: memory graph
     right = ttk.Frame(root)
     right.pack(side='right', fill='y', padx=6, pady=6)
 
-    mem_title = ttk.Label(right, text="Memory Usage", font=(None, 14, 'bold'))
+    mem_title = ttk.Label(right, text=_('gui.memory.usage'), font=(None, 14, 'bold'))
     mem_title.pack()
 
     canvas_w = 480
@@ -63,7 +68,7 @@ def start_monitor_gui(poll_interval_ms: int = 1000):
     mem_canvas = tk.Canvas(right, width=canvas_w, height=canvas_h, bg='#0b0b0b')
     mem_canvas.pack()
 
-    mem_label = ttk.Label(right, text="Used: -- MB")
+    mem_label = ttk.Label(right, text=_('gui.memory.used'))
     mem_label.pack(pady=(6,0))
 
     mem_history = []
@@ -97,9 +102,9 @@ def start_monitor_gui(poll_interval_ms: int = 1000):
                 mem_label.config(text=f"Used: {used_mb} MB ({vm.percent}%)")
                 mem_history.append(vm.percent)
             else:
-                mem_label.config(text="psutil not installed")
+                mem_label.config(text=_('gui.psutil.not.installed'))
         except Exception:
-            mem_label.config(text="mem read error")
+            mem_label.config(text=_('gui.mem.read.error'))
 
         # draw history
         mem_canvas.delete('all')

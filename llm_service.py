@@ -4,6 +4,10 @@ import time
 import openvino_genai as ov_genai
 from rich.console import Console
 from wintoast import sendToast
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from i18n import _
 
 console = Console()
 
@@ -20,18 +24,18 @@ class LLMService:
     def _load_model(self):
         """Load model to the specified device"""
         try:
-            console.print(f"[dim]🔄 Loading model {self.model_path} to device {self.device}...[/dim]")
-            console.print("[dim]   Please wait a moment. The model requires some time to load. Once completed, the API/Console Client will be available immediately.[/dim]")
+            console.print(f"[dim]🔄 {_('server.model.loading')} {self.model_path} to device {self.device}...[/dim]")
+            console.print(f"[dim]   {_('server.model.loading.message')}[/dim]")
             # 使用chat模板加载tokenizer以获得更好的对话支持
             self.pipe = ov_genai.LLMPipeline(self.model_path, device=self.device, config={"chat_template": "chatml"})
-            console.print(f"[dim]✅ Model loaded successfully. Running device: {self.device}[/dim]")
+            console.print(f"[dim]✅ {_('server.model.loaded')} Running device: {self.device}[/dim]")
             sendToast("Model Load Success", f"Model {self.model_path} loaded successfully on device {self.device}")
         except RuntimeError as e:
-            console.print(f"[red]⚠️ Device {self.device} failed to load. Switching to automatic mode.[/red]")
-            sendToast("Model Load Error", f"Device {self.device} failed to load. Switched to AUTO mode. Error: {e}")
+            console.print(f"[red]⚠️ {_('server.model.load.failed', device=self.device)}[/red]")
+            sendToast("Model Load Error", _('server.model.load.error', device=self.device, error=e))
 
             self.pipe = ov_genai.LLMPipeline(self.model_path, device="AUTO", config={"chat_template": "chatml"})
-            console.print("[dim]✅ The model has switched to AUTO device operation.[/dim]")
+            console.print(f"[dim]✅ {_('server.model.auto.switch')}[/dim]")
 
     def _build_prompt(self, user_input: str) -> str:
         """Build prompt for the model"""

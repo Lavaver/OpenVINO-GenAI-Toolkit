@@ -29,6 +29,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic API server functionality
 - Command-line console
 - Frontend integration
-
-[Unreleased]: https://github.com/Lavaver/OpenVINO-GenAI-Toolkit/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/Lavaver/OpenVINO-GenAI-Toolkit/releases/tag/v0.1.0

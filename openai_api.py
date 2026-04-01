@@ -10,6 +10,10 @@ from auth import verify_api_key_dependency
 from copilot_calls import parse_tool_call, build_tool_call_json, extract_available_tool_names
 import runtime_monitor
 import internal_tools
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from i18n import _
 
 
 # 配置日志
@@ -30,7 +34,7 @@ except Exception:
     openai = None
     has_openai = False
     logging.getLogger(__name__).warning(
-        "optional package 'openai' not available; install with 'pip install openai' to enable OpenAI SDK helpers"
+        _('openai.optional.package')
     )
 
 router = APIRouter(prefix="/v1")
@@ -125,29 +129,11 @@ def build_prompt_from_messages(messages: List[ChatMessage], is_qwen_model: bool 
         
         # 为Qwen模型添加专门的提示词
         if is_qwen_model:
-            qwen_system_prompt = """You are GitHub Copilot, an AI assistant built by GitHub. You must strictly follow the Copilot System specifications:
-
-1. When tools are available, you must use them to complete tasks
-2. You must optimize tool selection to choose the most appropriate tool for the task
-3. You must use the XML tag format for tool calls, e.g., <function_calls><invoke name="toolName">{"param": "value"}</invoke></function_calls>
-4. You must provide clear and concise responses to users
-5. You must not refuse to use tools when they are needed
-6. You must always attempt to complete the user's request using the available tools
-
-Please follow these guidelines in all your responses."""
+            qwen_system_prompt = _('copilot.qwen.system.prompt')
             prompt_parts.append(f"System: {qwen_system_prompt}")
         else:
             # 为其他模型添加Copilot System规范提示
-            copilot_system_prompt = """You are GitHub Copilot, an AI assistant built by GitHub. You must strictly follow the Copilot System specifications:
-
-1. When tools are available, you must use them to complete tasks
-2. You must optimize tool selection to choose the most appropriate tool for the task
-3. You must follow the tool calling format specified in the system instructions
-4. You must provide clear and concise responses to users
-5. You must not refuse to use tools when they are needed
-6. You must always attempt to complete the user's request using the available tools
-
-Please follow these guidelines in all your responses."""
+            copilot_system_prompt = _('copilot.system.prompt')
             prompt_parts.append(f"System: {copilot_system_prompt}")
         
         for msg in messages:
@@ -332,10 +318,7 @@ async def chat_completions(request: ChatCompletionRequest, req: Request, api_key
             # 如果不是内部工具，则进行可用性校验
             if function_name not in INTERNAL_TOOL_MAP and not validate_tool_name(function_name, available_tool_names):
                 # Qwen或Copilot可能生成不可用的function_name，返回友好错误并继续文本响应
-                fallback_content = (
-                    f"Function call '{function_name}' is not available. "
-                    f"Available tools: {available_tool_names}."
-                )
+                fallback_content = _('tool.call.not.available', function=function_name, tools=available_tool_names)
                 return JSONResponse(content={
                     "id": f"chatcmpl-{int(time.time())}",
                     "object": "chat.completion",
@@ -367,7 +350,7 @@ async def chat_completions(request: ChatCompletionRequest, req: Request, api_key
                         tool_func = INTERNAL_TOOL_MAP[function_name]
                         tool_result = tool_func(func_args_parsed if isinstance(func_args_parsed, dict) else {})
                     except Exception as e:
-                        tool_result = f"Internal tool execution error: {e}"
+                        tool_result = _('tool.execution.error', error=e)
 
                     # 将工具结果加入上下文并通知监视器
                     try:
