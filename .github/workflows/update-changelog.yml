@@ -1,0 +1,72 @@
+name: Update CHANGELOG.md
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get tag information
+        id: tag_info
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG_NAME#v}
+          DATE=$(date '+%Y-%m-%d')
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+
+      - name: Checkout main branch
+        run: git checkout main
+
+      - name: Update CHANGELOG.md
+        run: |
+          VERSION="${{ steps.tag_info.outputs.version }}"
+          TAG_NAME="${{ steps.tag_info.outputs.tag_name }}"
+          DATE="${{ steps.tag_info.outputs.date }}"
+          
+          # Read the current CHANGELOG.md
+          content=$(cat CHANGELOG.md)
+          
+          # Extract the Unreleased section
+          unreleased_section=$(echo "$content" | sed -n '/## \[Unreleased\]/,/## \[/p' | head -n -1)
+          
+          # Get the content before Unreleased section
+          before_unreleased=$(echo "$content" | sed -n '/## \[Unreleased\]/q;p')
+          
+          # Get the content after Unreleased section
+          after_unreleased=$(echo "$content" | sed -n '/## \[Unreleased\]/,/## \[/p' | tail -n +2)
+          
+          # Create the new version section
+          new_version_section="## [$VERSION] - $DATE\n\n$unreleased_section"
+          
+          # Create the new Unreleased section
+          new_unreleased_section="## [Unreleased]\n\n### Added\n\n### Changed\n\n### Fixed\n"
+          
+          # Combine all parts
+          new_content="$before_unreleased$new_version_section\n\n$new_unreleased_section$after_unreleased"
+          
+          # Write the updated content back to CHANGELOG.md
+          echo "$new_content" > CHANGELOG.md
+          
+          # Show the changes
+          git diff CHANGELOG.md
+
+      - name: Commit and push CHANGELOG.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG.md for ${{ steps.tag_info.outputs.tag_name }}"
+          git push origin main

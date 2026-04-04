@@ -108,5 +108,5 @@ class I18nManager:
 i18n = I18nManager()
 
 # 便捷函数
-def _(key: str, **kwargs) -> str:
+def localize(key: str, **kwargs) -> str:
     return i18n.get(key, **kwargs)

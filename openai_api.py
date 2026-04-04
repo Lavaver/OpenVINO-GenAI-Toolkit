@@ -13,7 +13,7 @@ import internal_tools
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from i18n import _
+from i18n import localize
 
 
 # 配置日志
@@ -34,7 +34,7 @@ except Exception:
     openai = None
     has_openai = False
     logging.getLogger(__name__).warning(
-        _('openai.optional.package')
+        localize('openai.optional.package')
     )
 
 router = APIRouter(prefix="/v1")
@@ -129,11 +129,11 @@ def build_prompt_from_messages(messages: List[ChatMessage], is_qwen_model: bool 
         
         # 为Qwen模型添加专门的提示词
         if is_qwen_model:
-            qwen_system_prompt = _('copilot.qwen.system.prompt')
+            qwen_system_prompt = localize('copilot.qwen.system.prompt')
             prompt_parts.append(f"System: {qwen_system_prompt}")
         else:
             # 为其他模型添加Copilot System规范提示
-            copilot_system_prompt = _('copilot.system.prompt')
+            copilot_system_prompt = localize('copilot.system.prompt')
             prompt_parts.append(f"System: {copilot_system_prompt}")
         
         for msg in messages:
@@ -189,7 +189,7 @@ def build_prompt_from_messages(messages: List[ChatMessage], is_qwen_model: bool 
         if prompt_parts:
             return "\n".join(prompt_parts)
         # 如果没有用户消息，返回一个默认提示
-        return "Hello, how can I help you today?"
+        return localize('openai.default_prompt')
     except Exception as e:
         # 捕获所有异常，确保返回一个有效的提示
         return f"Error building prompt: {str(e)}. Please try again."
@@ -318,7 +318,7 @@ async def chat_completions(request: ChatCompletionRequest, req: Request, api_key
             # 如果不是内部工具，则进行可用性校验
             if function_name not in INTERNAL_TOOL_MAP and not validate_tool_name(function_name, available_tool_names):
                 # Qwen或Copilot可能生成不可用的function_name，返回友好错误并继续文本响应
-                fallback_content = _('tool.call.not.available', function=function_name, tools=available_tool_names)
+                fallback_content = localize('tool.call.not.available', function=function_name, tools=available_tool_names)
                 return JSONResponse(content={
                     "id": f"chatcmpl-{int(time.time())}",
                     "object": "chat.completion",
@@ -350,7 +350,7 @@ async def chat_completions(request: ChatCompletionRequest, req: Request, api_key
                         tool_func = INTERNAL_TOOL_MAP[function_name]
                         tool_result = tool_func(func_args_parsed if isinstance(func_args_parsed, dict) else {})
                     except Exception as e:
-                        tool_result = _('tool.execution.error', error=e)
+                        tool_result = localize('tool.execution.error', error=e)
 
                     # 将工具结果加入上下文并通知监视器
                     try:
@@ -1001,6 +1001,7 @@ async def chat_completions(request: ChatCompletionRequest, req: Request, api_key
                 "code": 500
             }
         }
+        response["choices"][0]["message"]["content"] = localize('openai.error_occurred', error=str(e))
         return JSONResponse(content=response, status_code=500)
 
 @router.get("/models")
@@ -1033,7 +1034,8 @@ async def get_history(req: Request, api_key: str = Depends(verify_api_key_depend
     try:
         return JSONResponse(content={"history": history})
     except Exception:
-        return JSONResponse(content={"history": []})
+        from i18n import localize
+        return JSONResponse(content={"history": [], "error": localize('openai.history.error')})
 
 
 @router.post("/history")
@@ -1043,9 +1045,11 @@ async def post_history(item: dict, req: Request, api_key: str = Depends(verify_a
         req.app.state.chat_history = []
     try:
         req.app.state.chat_history.append(item)
-        return JSONResponse(content={"status": "ok"})
+        from i18n import localize
+        return JSONResponse(content={"status": "ok", "msg": localize('openai.history.appended')})
     except Exception as e:
-        return JSONResponse(content={"status": "error", "error": str(e)}, status_code=500)
+        from i18n import localize
+        return JSONResponse(content={"status": "error", "error": localize('openai.history.append_failed', error=str(e))}, status_code=500)
 
 # 工具调用响应格式
 class ToolCallResponse(BaseModel):

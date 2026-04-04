@@ -11,6 +11,8 @@ lerna-debug.log*
 /frontend_dotnet/bin/
 /frontend_dotnet/obj/
 
+usrconfig.conf
+
 # Ignore additional .NET build and IDE files for the local frontend project
 # These are generated artifacts and user/IDE files that should not be committed
 /frontend_dotnet/.vs/
@@ -107,3 +109,5 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+
+openapi_api.log

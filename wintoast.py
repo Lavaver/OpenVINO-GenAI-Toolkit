@@ -20,7 +20,8 @@ def sendToast(title, texts):
             position=ToastImagePosition.AppLogo
         )
     except Exception as e:
-        print(f"图片加载失败：{e}")
+        from i18n import localize
+        print(localize('wintoast.image_load_failed', error=e))
         app_logo = None
 
     tst = Toast()

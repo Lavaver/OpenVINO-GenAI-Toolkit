@@ -6,16 +6,19 @@ from rich.console import Console
 from wintoast import sendToast
 import sys
 import os
+import pickle
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from i18n import _
+from i18n import localize as _
 
 console = Console()
 
 class LLMService:
-    def __init__(self, model_path: str, device: str = "AUTO"):
+    def __init__(self, model_path: str, device: str = "AUTO", sync: bool = False):
         self.model_path = model_path.strip('"')
         self.device = device
+        self.sync = sync
         self.pipe = None
+        self.swap_file = os.path.join(os.path.dirname(__file__), f"model_state_{os.path.basename(model_path)}.swap")
         self._load_model()
         # 使用 threading.Lock 而不是 asyncio.Lock 来确保线程安全
         import threading
@@ -24,6 +27,18 @@ class LLMService:
     def _load_model(self):
         """Load model to the specified device"""
         try:
+            if self.sync and os.path.exists(self.swap_file):
+                console.print(f"[dim]🔄 {_('model.state.loading', path=self.swap_file)}...[/dim]")
+                try:
+                    with open(self.swap_file, 'rb') as f:
+                        self.pipe = pickle.load(f)
+                    console.print(f"[dim]✅ {_('model.state.loaded', device=self.device)}[/dim]")
+                    sendToast(_('toast.model.state.loaded'), _('toast.model.state.loaded.message', path=self.swap_file))
+                    return
+                except Exception as e:
+                    console.print(f"[red]⚠️ {_('model.state.load.failed', error=e)}[/red]")
+                    # 继续正常加载模型
+            
             console.print(f"[dim]🔄 {_('server.model.loading')} {self.model_path} to device {self.device}...[/dim]")
             console.print(f"[dim]   {_('server.model.loading.message')}[/dim]")
             # 使用chat模板加载tokenizer以获得更好的对话支持
@@ -56,7 +71,13 @@ class LLMService:
                 do_sample=True
             )
             # 确保返回字符串类型的结果
-            return str(result) if result is not None else ""
+            result_str = str(result) if result is not None else ""
+            
+            # 保存模型状态到交换文件
+            if self.sync:
+                self._save_model_state()
+                
+            return result_str
 
     # ----- 异步生成（流式）-----
     async def generate_stream(self, user_input: str, max_tokens: int, temperature: float, top_p: float):
@@ -102,6 +123,9 @@ class LLMService:
             while True:
                 item = await queue.get()
                 if item is None:
+                    # 生成完成，保存模型状态
+                    if self.sync:
+                        self._save_model_state()
                     break
                 if isinstance(item, Exception):
                     raise item
@@ -157,6 +181,9 @@ class LLMService:
             while True:
                 item = await queue.get()
                 if item is None:
+                    # 生成完成，保存模型状态
+                    if self.sync:
+                        self._save_model_state()
                     break
                 if isinstance(item, Exception):
                     raise item
@@ -174,6 +201,9 @@ class LLMService:
                    ('"tool_calls"' in buffer):
                     # 如果检测到工具调用模式，立即返回完整缓冲区
                     yield buffer
+                    # 保存模型状态
+                    if self.sync:
+                        self._save_model_state()
                     break
                 
                 # 否则，正常流式输出
@@ -219,4 +249,20 @@ class LLMService:
             )
             result = await loop.run_in_executor(None, partial_func)
             # 确保返回字符串类型的结果
-            return str(result) if result is not None else ""
+            result_str = str(result) if result is not None else ""
+            
+            # 保存模型状态到交换文件
+            if self.sync:
+                self._save_model_state()
+                
+            return result_str
+    
+    def _save_model_state(self):
+        """Save model state to swap file"""
+        if self.sync and self.pipe:
+            try:
+                with open(self.swap_file, 'wb') as f:
+                    pickle.dump(self.pipe, f)
+                console.print(f"[dim]✅ {_('model.state.saved', path=self.swap_file)}[/dim]")
+            except Exception as e:
+                console.print(f"[red]⚠️ {_('model.state.save.failed', error=e)}[/red]")

@@ -1,16 +1,13 @@
 import argparse
 import time
-import threading
-from rich.console import Console, Group
+from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.live import Live
-from rich.text import Text
 from rich.box import ROUNDED
 from llm_service import LLMService
 from asciiart import print_ascii_art
 from wintoast import sendToast
-from copilot_calls import parse_tool_call, extract_available_tool_names
+from copilot_calls import parse_tool_call
 from openai_api import build_prompt_from_messages, ChatMessage
 import internal_tools
 import json
@@ -20,7 +17,7 @@ import operator as _operator
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from i18n import _
+from i18n import localize
 
 THINK_START = "<think>"
 THINK_END = "</think>"
@@ -29,16 +26,17 @@ def main():
     # 打印ASCII艺术
     print_ascii_art()
     parser = argparse.ArgumentParser(description="OpenVINO GenAI Console Client")
-    parser.add_argument("model_path", help=_('cli.model_path.help'))
-    parser.add_argument("prompt", nargs='?', default=None, help=_('cli.prompt.help'))
-    parser.add_argument("-d", "--device", default="AUTO", help=_('cli.device.help'))
-    parser.add_argument("-m", "--max-tokens", type=int, default=32768, help=_('cli.max_tokens.help'))
-    parser.add_argument("-t", "--temperature", type=float, default=0.7, help=_('cli.temperature.help'))
-    parser.add_argument("-p", "--top-p", type=float, default=0.9, help=_('cli.top_p.help'))
-    parser.add_argument("-s", "--stream", action="store_true", help=_('cli.stream.help'))
-    parser.add_argument("-b", "--box",default="ROUNDED", help=_('cli.box.help'))
+    parser.add_argument("model_path", help=localize('cli.model_path.help'))
+    parser.add_argument("prompt", nargs='?', default=None, help=localize('cli.prompt.help'))
+    parser.add_argument("-d", "--device", default="AUTO", help=localize('cli.device.help'))
+    parser.add_argument("-m", "--max-tokens", type=int, default=32768, help=localize('cli.max_tokens.help'))
+    parser.add_argument("-t", "--temperature", type=float, default=0.7, help=localize('cli.temperature.help'))
+    parser.add_argument("-p", "--top-p", type=float, default=0.9, help=localize('cli.top_p.help'))
+    parser.add_argument("-s", "--stream", action="store_true", help=localize('cli.stream.help'))
+    parser.add_argument("-b", "--box",default="ROUNDED", help=localize('cli.box.help'))
 
     args = parser.parse_args()
+
     console = Console()
     console.clear()
 
@@ -132,7 +130,7 @@ def main():
     previous_tool_calls_args = {}
 
     # 启动交互式会话（长驻）
-    console.print(f"[dim]{_('console.session.started')}[/dim]")
+    console.print(f"[dim]{localize('console.session.started')}[/dim]")
 
     # 初始用户输入
     if args.prompt:
@@ -149,41 +147,41 @@ def main():
             cmd = user_input.strip()
             cmd_lower = cmd.lower()
             if cmd_lower in ("/exit", "exit", "quit"):
-                console.print(f"[green]{_('console.session.ended')}[/green]")
+                console.print(f"[green]{localize('console.session.ended')}[/green]")
                 break
 
             if cmd_lower in ("/tools", "tools"):
-                console.print(_('console.tools.available'))
+                console.print(localize('console.tools.available'))
                 for n, t in tools_registry.items():
                     console.print(f" - {n}: {t.get('desc')}")
                 user_input = console.input("You: ")
                 continue
 
             if cmd_lower in ("/help", "help"):
-                console.print(f"[bold]{_('console.commands.title')}[/bold]")
-                console.print(_('console.commands.help'))
-                console.print(_('console.commands.tools'))
-                console.print(_('console.commands.history'))
-                console.print(_('console.commands.save'))
-                console.print(_('console.commands.set'))
-                console.print(_('console.commands.model'))
-                console.print(_('console.commands.last'))
-                console.print(_('console.commands.reset'))
-                console.print(_('console.commands.exit'))
+                console.print(f"[bold]{localize('console.commands.title')}[/bold]")
+                console.print(localize('console.commands.help'))
+                console.print(localize('console.commands.tools'))
+                console.print(localize('console.commands.history'))
+                console.print(localize('console.commands.save'))
+                console.print(localize('console.commands.set'))
+                console.print(localize('console.commands.model'))
+                console.print(localize('console.commands.last'))
+                console.print(localize('console.commands.reset'))
+                console.print(localize('console.commands.exit'))
                 user_input = console.input("You: ")
                 continue
 
             if cmd_lower in ("/model", "model"):
-                console.print(_('console.model.path', path=llm.model_path))
+                console.print(localize('console.model.path', path=llm.model_path))
                 user_input = console.input("You: ")
                 continue
 
             if cmd_lower in ("/last", "/lastreply"):
                 last_assistant = next((m for m in reversed(messages) if getattr(m, 'role', '') == 'assistant'), None)
                 if last_assistant:
-                    console.print(Panel(Markdown(last_assistant.content), title=_('console.last.reply'), box=ROUNDED, border_style="cyan", padding=(0,1)))
+                    console.print(Panel(Markdown(last_assistant.content), title=localize('console.last.reply'), box=ROUNDED, border_style="cyan", padding=(0,1)))
                 else:
-                    console.print(f"[dim]{_('console.no.replies')}[/dim]")
+                    console.print(f"[dim]{localize('console.no.replies')}[/dim]")
                 user_input = console.input("You: ")
                 continue
 
@@ -196,7 +194,7 @@ def main():
                     except Exception:
                         n = None
                 msgs = messages[-n:] if n else messages
-                console.print(f"[bold]{_('console.history.title')}[/bold]")
+                console.print(f"[bold]{localize('console.history.title')}[/bold]")
                 start_idx = max(1, len(messages) - len(msgs) + 1)
                 for i, m in enumerate(msgs, start=start_idx):
                     role = getattr(m, 'role', 'unknown')
@@ -216,16 +214,16 @@ def main():
                     payload = [_msg_to_dict(m) for m in messages]
                     with open(fname, "w", encoding="utf-8") as f:
                         json.dump(payload, f, ensure_ascii=False, indent=2)
-                    console.print(f"[green]{_('console.save.success', filename=fname)}[/green]")
+                    console.print(f"[green]{localize('console.save.success', filename=fname)}[/green]")
                 except Exception as e:
-                    console.print(f"[red]{_('console.save.failed', error=e)}[/red]")
+                    console.print(f"[red]{localize('console.save.failed', error=e)}[/red]")
                 user_input = console.input("You: ")
                 continue
 
             if cmd_lower.startswith("/set "):
                 parts = cmd.split()
                 if len(parts) < 3:
-                    console.print(f"[yellow]{_('console.set.usage')}[/yellow]")
+                    console.print(f"[yellow]{localize('console.set.usage')}[/yellow]")
                     user_input = console.input("You: ")
                     continue
                 _, param, value = parts[0], parts[1], parts[2]
@@ -233,27 +231,27 @@ def main():
                 try:
                     if p in ("temperature", "temp"):
                         args.temperature = float(value)
-                        console.print(_('console.set.temperature', value=args.temperature))
+                        console.print(localize('console.set.temperature', value=args.temperature))
                     elif p in ("top_p", "topp"):
                         args.top_p = float(value)
-                        console.print(_('console.set.top_p', value=args.top_p))
+                        console.print(localize('console.set.top_p', value=args.top_p))
                     elif p in ("max_tokens", "max-tokens", "max"):
                         args.max_tokens = int(value)
-                        console.print(_('console.set.max_tokens', value=args.max_tokens))
+                        console.print(localize('console.set.max_tokens', value=args.max_tokens))
                     elif p == "stream":
                         args.stream = value.lower() in ("1","true","on","yes")
-                        console.print(_('console.set.stream', value=args.stream))
+                        console.print(localize('console.set.stream', value=args.stream))
                     else:
-                        console.print(f"[yellow]{_('console.set.unknown', param=param)}[/yellow]")
+                        console.print(f"[yellow]{localize('console.set.unknown', param=param)}[/yellow]")
                 except Exception as e:
-                    console.print(f"[red]{_('console.set.failed', error=e)}[/red]")
+                    console.print(f"[red]{localize('console.set.failed', error=e)}[/red]")
                 user_input = console.input("You: ")
                 continue
 
             if cmd_lower in ("/reset", "reset"):
                 messages = []
                 previous_tool_calls_args = {}
-                console.print(f"[dim]{_('console.context.cleared')}[/dim]")
+                console.print(f"[dim]{localize('console.context.cleared')}[/dim]")
                 user_input = console.input("You: ")
                 continue
 
@@ -297,7 +295,7 @@ def main():
                     if not tool_payload:
                         # 普通回复
                         messages.append(ChatMessage(role="assistant", content=text))
-                        console.print(Panel(Markdown(text), title=f"✨ {_('console.answer.title')}", box=ROUNDED, border_style="magenta", padding=(0,1)))
+                        console.print(Panel(Markdown(text), title=f"✨ {localize('console.answer.title')}", box=ROUNDED, border_style="magenta", padding=(0,1)))
                         break
 
                 # 处理工具调用
@@ -315,9 +313,9 @@ def main():
                         try:
                             result = tools_registry[fname]["func"](fargs)
                         except Exception as e:
-                            result = _('tool.execution.error', error=e)
+                            result = localize('tool.execution.error', error=e)
                     else:
-                        result = _('tool.call.not.available', function=fname, tools=', '.join(tool_names))
+                        result = localize('tool.call.not.available', function=fname, tools=', '.join(tool_names))
 
                     # 将工具结果作为 tool 角色消息加入上下文，并记录参数用于后续合并
                     messages.append(ChatMessage(role="tool", name=fname, content=str(result)))
@@ -331,9 +329,9 @@ def main():
             # 等待下一轮用户输入
             user_input = console.input("You: ")
     except KeyboardInterrupt:
-        console.print(f"\n[red]{_('console.interrupted.message')}[/red]")
+        console.print(f"\n[red]{localize('console.interrupted.message')}[/red]")
     finally:
-        sendToast(_('console.session.title'), _('console.session.finished'))
+        sendToast(localize('console.session.title'), localize('console.session.finished'))
 
 if __name__ == "__main__":
     main()

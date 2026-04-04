@@ -3,6 +3,7 @@ import secrets
 from typing import Optional
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from i18n import localize
 
 # HTTP Bearer token认证
 security = HTTPBearer(auto_error=False)
@@ -68,7 +69,7 @@ def verify_api_key_dependency(api_key: Optional[str] = Depends(get_api_key)):
     if not api_key_manager.verify_api_key(api_key):
         raise HTTPException(
             status_code=401,
-            detail="Invalid or missing API key. Expected format: Bearer YOUR_API_KEY",
+            detail=localize('auth.invalid_or_missing_api_key'),
             headers={"WWW-Authenticate": "Bearer"},
         )
     return api_key

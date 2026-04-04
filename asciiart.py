@@ -4,7 +4,7 @@ import json
 import os
 from rich.console import Console
 from rich.text import Text
-from i18n import _
+from i18n import localize
 
 # 初始化Console对象
 console = Console()
@@ -17,7 +17,7 @@ def get_version():
             build_info = json.load(f)
             return build_info.get('version', '0.2.0-20260225')
     except Exception:
-        return '0.2.0-20260225'
+        return localize('version.unavailable')
 
 def print_ascii_art():
     """
@@ -54,4 +54,4 @@ def print_ascii_art():
     console.print(colored_art)
 
     version = get_version()
-    console.print(_('asciiart.welcome', toolkit=f"[magenta]{_('asciiart.title')}[/magenta]", version=f"[bright_cyan]{version}[/bright_cyan]", python_version=f"[bright_cyan]{sys.version}[/bright_cyan]"))
+    console.print(localize('asciiart.welcome', toolkit=f"[magenta]{localize('asciiart.title')}[/magenta]", version=f"[bright_cyan]{version}[/bright_cyan]", python_version=f"[bright_cyan]{sys.version}[/bright_cyan]"))
